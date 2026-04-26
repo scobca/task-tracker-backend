@@ -4,10 +4,19 @@ import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.entities.Users
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.springframework.stereotype.Component
 
-@Mapper(componentModel = "spring")
-interface UsersMapper {
+@Component
+class UsersMapper {
 
-    @Mapping(target = "id", ignore = true)
-    fun userFromDto(dto: CreateUserDto): Users
+    fun userFromDto(dto: CreateUserDto): Users {
+        return Users(
+            id = 0L,
+            name = dto.name,
+            email = dto.email,
+            password = dto.password,
+            createdAt = null,
+            updatedAt = null
+        )
+    }
 }

@@ -8,24 +8,30 @@ import org.esc.tasktracker.enums.TeamRoles
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
+import org.springframework.stereotype.Component
 
-@Mapper(componentModel = "spring")
-interface TeamsMapper {
+@Component
+class TeamsMapper {
 
-    @Mappings(
-        Mapping(target = "id", ignore = true),
-        Mapping(target = "owner", source = "user"),
-        Mapping(target = "name", source = "dto.name"),
-    )
-    fun teamFromDto(dto: CreateTeamDto, user: Users): Teams
+    fun teamFromDto(dto: CreateTeamDto, user: Users): Teams {
+        return Teams(
+            id = 0L,
+            name = dto.name,
+            description = dto.description,
+            owner = user,
+            createdAt = null,
+            updatedAt = null
+        )
+    }
 
-    @Mappings(
-        Mapping(target = "user", source = "user"),
-        Mapping(target = "team", source = "team"),
-        Mapping(target = "role", source = "role"),
-        Mapping(target = "id", ignore = true),
-        Mapping(target = "createdAt", ignore = true),
-        Mapping(target = "updatedAt", ignore = true),
-    )
-    fun teamMembershipFromDto(user: Users, team: Teams, role: TeamRoles): TeamMembership
+    fun teamMembershipFromDto(user: Users, team: Teams, role: TeamRoles): TeamMembership {
+        return TeamMembership(
+            id = 0L,
+            user = user,
+            team = team,
+            role = role,
+            createdAt = null,
+            updatedAt = null
+        )
+    }
 }
