@@ -19,7 +19,7 @@ import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessag
  * @since 1.0
  */
 @Configuration
-class KotlinxSerializationConfig {
+open class KotlinxSerializationConfig {
 
     /**
      * Creates and configures a [KotlinSerializationJsonHttpMessageConverter] bean.
@@ -42,7 +42,7 @@ class KotlinxSerializationConfig {
      * @see Json
      */
     @Bean
-    fun kotlinSerializationJsonHttpMessageConverter(): KotlinSerializationJsonHttpMessageConverter {
+    open fun kotlinSerializationJsonHttpMessageConverter(): KotlinSerializationJsonHttpMessageConverter {
         val json = Json {
             ignoreUnknownKeys = true
             encodeDefaults = true

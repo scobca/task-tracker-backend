@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.ResourceBundleMessageSource
 
 @Configuration
-class LocalesConfig {
+open class LocalesConfig {
 
     @Bean
-    fun messageSource(): MessageSource {
+    open fun messageSource(): MessageSource {
         val source = ResourceBundleMessageSource()
 
         source.setBasenames(

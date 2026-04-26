@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration
  */
 @Configuration
 @ConfigurationProperties(prefix = "config.cors")
-class CorsProperties {
+open class CorsProperties {
     lateinit var frontendLocalHost: String
     lateinit var frontendDockerHost: String
     lateinit var frontendProductionHost: String

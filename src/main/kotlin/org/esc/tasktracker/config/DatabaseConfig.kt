@@ -24,10 +24,10 @@ import javax.sql.DataSource
  * @since 1.0
  */
 @Configuration
-class DatabaseConfig(private val dbProperties: DatabaseProperties) {
+open class DatabaseConfig(private val dbProperties: DatabaseProperties) {
 
     @Bean
-    fun dataSource(): DataSource {
+    open fun dataSource(): DataSource {
         val dataSource = DriverManagerDataSource()
 
         dataSource.url = dbProperties.url

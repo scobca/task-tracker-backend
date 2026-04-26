@@ -16,7 +16,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-class WebSecurityConfig(
+open class WebSecurityConfig(
     private val jwtFilter: JwtRequestFilter,
     private val corsProperties: CorsProperties,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
@@ -24,7 +24,7 @@ class WebSecurityConfig(
 ) {
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    open fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/actuator/prometheus").permitAll()
@@ -45,7 +45,7 @@ class WebSecurityConfig(
     }
 
     @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
+    open fun corsConfigurationSource(): CorsConfigurationSource {
         val corsConfig = CorsConfiguration().apply {
             addAllowedOrigin(corsProperties.frontendLocalHost)
             addAllowedOrigin(corsProperties.frontendDockerHost)

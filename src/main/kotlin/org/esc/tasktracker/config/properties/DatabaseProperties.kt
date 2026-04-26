@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration
  */
 @Configuration
 @ConfigurationProperties(prefix = "database")
-class DatabaseProperties {
+open class DatabaseProperties {
     lateinit var url: String
     lateinit var username: String
     lateinit var password: String
