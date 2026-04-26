@@ -38,6 +38,10 @@ out/
 
 ### Kotlin ###
 .kotlin
+
 ### Enviropment ###
 *.env*
 !.env.example
+
+### External libs ###
+lib/

@@ -114,6 +114,11 @@ tasks.withType<Test> {
     }
 }
 
+tasks.register<Copy>("copyDeps") {
+    from(configurations.runtimeClasspath)
+    into("lib")
+}
+
 conventionalCommits {
     warningIfNoGitRoot = true
     types += listOf("build", "chore", "docs", "feat", "fix", "refactor", "style", "test")
