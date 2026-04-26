@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class TeamMembershipService(
+open class TeamMembershipService(
     override val repository: TeamMembershipRepository,
     private val teamsService: TeamsService,
     private val usersService: UsersService,

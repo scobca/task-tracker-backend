@@ -22,7 +22,7 @@ import java.util.Date
 import java.util.UUID
 
 @Component
-class JwtUtil(
+open class JwtUtil(
     private val jwtProperties: JwtProperties,
     private val jwtTokensRepository: JwtTokensRepository,
     private val jwtTokensStorageMapper: JwtTokensStorageMapper,

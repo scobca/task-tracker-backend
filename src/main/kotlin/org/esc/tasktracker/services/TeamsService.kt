@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional
  * @since 0.2.0
  */
 @Service
-class TeamsService(
+open class TeamsService(
     override val repository: TeamsRepository,
     private val teamsMapper: TeamsMapper,
     private val teamsSpecifications: TeamsSpecifications,

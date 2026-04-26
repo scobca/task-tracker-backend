@@ -29,7 +29,7 @@ import java.util.*
  * @since 1.0
  */
 @Service
-class AuthService(
+open class AuthService(
     private val usersService: UsersService,
     private val jwtUtil: JwtUtil,
     private val passwordEncoder: PasswordEncoder,

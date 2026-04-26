@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional
  * @since 1.0
  */
 @Service
-class UsersService(
+open class UsersService(
     override val repository: UsersRepository,
     private val usersSpecifications: UsersSpecifications,
     private val usersMapper: UsersMapper,
