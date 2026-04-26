@@ -2,6 +2,8 @@ server:
   port: ${SERVER_PORT}
 
 spring:
+  locales:
+    default: ${LOCALE_DEFAULT}
   application:
     name: esc-task-tracker
 
