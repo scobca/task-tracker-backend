@@ -39,5 +39,5 @@ out/
 ### Kotlin ###
 .kotlin
 ### Enviropment ###
-.env*
+*.env*
 !.env.example
