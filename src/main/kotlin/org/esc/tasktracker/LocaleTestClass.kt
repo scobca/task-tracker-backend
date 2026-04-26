@@ -18,7 +18,7 @@ class LocaleTestClass(
      * Вот эти 2 строки просто копируем и вставляем в начало каждого класса, где делаем локализацию.
      * Это - получение базового языка локализации из конфига приложения
      */
-    @Value($$"${spring.locales.default}")
+    @Value("\${spring.locales.default}")
     private lateinit var defaultLocale: String
 
     /**
