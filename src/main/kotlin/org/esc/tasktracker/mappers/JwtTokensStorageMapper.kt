@@ -6,7 +6,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 
 @Mapper(componentModel = "spring")
-fun interface JwtTokensStorageMapper {
+interface JwtTokensStorageMapper {
 
     @Mapping(target = "id", ignore = true)
     fun tokenFromSaveRefreshDto(o: SaveRefreshTokenDto): JwtTokensStorage

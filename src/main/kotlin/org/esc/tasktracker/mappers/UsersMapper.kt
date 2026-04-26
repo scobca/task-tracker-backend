@@ -6,7 +6,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 
 @Mapper(componentModel = "spring")
-fun interface UsersMapper {
+interface UsersMapper {
 
     @Mapping(target = "id", ignore = true)
     fun userFromDto(dto: CreateUserDto): Users
