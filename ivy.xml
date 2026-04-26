@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
+    <info organisation="org.esc" module="task-tracker"/>
+
+    <configurations>
+        <conf name="compile" visibility="public"/>
+        <conf name="runtime" visibility="public" extends="compile"/>
+        <conf name="test" visibility="private" extends="runtime"/>
+    </configurations>
+
+    <dependencies>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-data-jpa" rev="4.0.2" conf="compile->default"/>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-flyway" rev="4.0.2" conf="compile->default"/>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-security" rev="4.0.2" conf="compile->default"/>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-validation" rev="4.0.2" conf="compile->default"/>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-webmvc" rev="4.0.2" conf="compile->default"/>
+        <dependency org="org.springframework.boot" name="spring-boot-starter-websocket" rev="4.0.2" conf="compile->default"/>
+
+        <dependency org="org.springframework.boot" name="spring-boot-devtools" rev="4.0.2" conf="runtime->default"/>
+
+        <dependency org="io.jsonwebtoken" name="jjwt" rev="0.12.6" conf="compile->default"/>
+        <dependency org="javax.xml.bind" name="jaxb-api" rev="2.3.0" conf="compile->default"/>
+
+        <dependency org="org.flywaydb" name="flyway-database-postgresql" rev="11.13.2" conf="compile->default"/>
+        <dependency org="org.postgresql" name="postgresql" rev="42.7.7" conf="runtime->default"/>
+
+        <dependency org="org.mapstruct" name="mapstruct" rev="1.5.3.Final" conf="compile->default"/>
+        <dependency org="org.mapstruct" name="mapstruct-processor" rev="1.5.3.Final" conf="compile->default"/>
+
+        <dependency org="org.jetbrains.kotlin" name="kotlin-reflect" rev="2.2.21" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-reactor" rev="1.10.1" conf="compile->default"/>
+        <dependency org="io.projectreactor.kotlin" name="reactor-kotlin-extensions" rev="1.2.3" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-core" rev="1.5.1" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-json" rev="1.5.1" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-core" rev="1.10.1" conf="compile->default"/>
+
+        <dependency org="one.stayfocused.spring" name="dotenv-spring-boot" rev="1.0.0" conf="compile->default"/>
+        <dependency org="javax.annotation" name="javax.annotation-api" rev="1.3.2" conf="compile->default"/>
+        <dependency org="org.aspectj" name="aspectjweaver" rev="1.9.24" conf="compile->default"/>
+
+        <dependency org="io.mockk" name="mockk" rev="1.13.12" conf="test->default"/>
+        <dependency org="org.mockito" name="mockito-core" rev="5.17.0" conf="test->default"/>
+        <dependency org="org.jetbrains.kotlin" name="kotlin-test" rev="2.2.21" conf="test->default"/>
+        <dependency org="org.jetbrains.kotlin" name="kotlin-test-junit5" rev="2.2.21" conf="test->default"/>
+    </dependencies>
+</ivy-module>
