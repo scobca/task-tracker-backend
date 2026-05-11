@@ -3,6 +3,8 @@
     <info organisation="org.esc" module="task-tracker"/>
 
     <configurations>
+        <!-- Добавлена конфигурация default -->
+        <conf name="default" visibility="public" extends="runtime"/>
         <conf name="compile" visibility="public"/>
         <conf name="runtime" visibility="public" extends="compile"/>
         <conf name="test" visibility="private" extends="runtime"/>
@@ -18,29 +20,39 @@
 
         <dependency org="org.springframework.boot" name="spring-boot-devtools" rev="4.0.2" conf="runtime->default"/>
 
-        <dependency org="io.jsonwebtoken" name="jjwt" rev="0.12.6" conf="compile->default"/>
-        <dependency org="javax.xml.bind" name="jaxb-api" rev="2.3.0" conf="compile->default"/>
+        <dependency org="io.jsonwebtoken" name="jjwt" rev="${jsonwebtokenVersion}" conf="compile->default"/>
+        <dependency org="javax.xml.bind" name="jaxb-api" rev="${jaxbApiVersion}" conf="compile->default"/>
 
         <dependency org="org.flywaydb" name="flyway-database-postgresql" rev="11.13.2" conf="compile->default"/>
         <dependency org="org.postgresql" name="postgresql" rev="42.7.7" conf="runtime->default"/>
 
-        <dependency org="org.mapstruct" name="mapstruct" rev="1.5.3.Final" conf="compile->default"/>
-        <dependency org="org.mapstruct" name="mapstruct-processor" rev="1.5.3.Final" conf="compile->default"/>
+        <dependency org="org.mapstruct" name="mapstruct" rev="${mapstructVersion}" conf="compile->default"/>
+        <dependency org="org.mapstruct" name="mapstruct-processor" rev="${mapstructVersion}" conf="compile->default"/>
 
         <dependency org="org.jetbrains.kotlin" name="kotlin-reflect" rev="2.2.21" conf="compile->default"/>
-        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-reactor" rev="1.10.1" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-reactor" rev="${kotlinxCoroutinesVersion}" conf="compile->default"/>
         <dependency org="io.projectreactor.kotlin" name="reactor-kotlin-extensions" rev="1.2.3" conf="compile->default"/>
-        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-core" rev="1.5.1" conf="compile->default"/>
-        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-json" rev="1.5.1" conf="compile->default"/>
-        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-core" rev="1.10.1" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-core" rev="${kotlinxSerializationVersion}" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-serialization-json" rev="${kotlinxSerializationVersion}" conf="compile->default"/>
+        <dependency org="org.jetbrains.kotlinx" name="kotlinx-coroutines-core" rev="${kotlinxCoroutinesVersion}" conf="compile->default"/>
 
         <dependency org="one.stayfocused.spring" name="dotenv-spring-boot" rev="1.0.0" conf="compile->default"/>
-        <dependency org="javax.annotation" name="javax.annotation-api" rev="1.3.2" conf="compile->default"/>
+        <dependency org="javax.annotation" name="javax.annotation-api" rev="${javaxAnnotationVersion}" conf="compile->default"/>
         <dependency org="org.aspectj" name="aspectjweaver" rev="1.9.24" conf="compile->default"/>
 
         <dependency org="io.mockk" name="mockk" rev="1.13.12" conf="test->default"/>
         <dependency org="org.mockito" name="mockito-core" rev="5.17.0" conf="test->default"/>
         <dependency org="org.jetbrains.kotlin" name="kotlin-test" rev="2.2.21" conf="test->default"/>
         <dependency org="org.jetbrains.kotlin" name="kotlin-test-junit5" rev="2.2.21" conf="test->default"/>
+
+        <!-- Spring Boot Loader (нужен для executable JAR) -->
+        <dependency org="org.springframework.boot" name="spring-boot-loader" rev="4.0.2" conf="runtime->default"/>
+
+        <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.17.1" conf="compile->default"/>
+        <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.17.1" conf="compile->default"/>
+        <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.17.1" conf="compile->default"/>
+        <dependency org="com.fasterxml.jackson.module" name="jackson-module-kotlin" rev="2.17.1" conf="compile->default"/>
+        <dependency org="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310" rev="2.17.1" conf="compile->default"/>
+        <dependency org="com.fasterxml.jackson.datatype" name="jackson-datatype-jdk8" rev="2.17.1" conf="compile->default"/>
     </dependencies>
 </ivy-module>

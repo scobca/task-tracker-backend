@@ -1,153 +1,102 @@
-<?xml version="1.0"?>
 <project name="task-tracker"
+         default="build"
          basedir="."
          xmlns:ivy="antlib:org.apache.ivy.ant">
 
-    <property file="ant.properties"/>
-    <property environment="env"/>
+    <property file="build.properties"/>
 
-
-    <!--  Paths  -->
+    <!-- Paths -->
     <path id="ivy.lib.path">
         <pathelement location="${ivy.jar.file}"/>
     </path>
 
     <path id="compile.classpath">
-        <fileset dir="${build.lib.dir}">
+        <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement location="${build.classes.dir}"/>
+        <pathelement location="${classes.dir}"/>
     </path>
 
-
-    <!--  Taskdef & Typedef  -->
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant"
              classpathref="ivy.lib.path"/>
 
-    <typedef resource="org/jetbrains/kotlin/ant/antlib.xml"
-             classpath="${kotlin.lib}/kotlin-ant.jar"/>
+    <taskdef resource="org/springframework/boot/ant/antlib.xml"
+             uri="antlib:org.springframework.boot.ant">
+        <classpath>
+            <pathelement location="${spring.boot.antlib.jar}"/>
+        </classpath>
+    </taskdef>
 
-
-    <!--  Targets  -->
-    <target name="init">
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${build.classes.dir}"/>
-        <mkdir dir="${build.resources.dir}"/>
-        <mkdir dir="${build.lib.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-    </target>
-
-    <target name="resolve" depends="init">
+    <target name="resolve">
+        <mkdir dir="${lib.dir}"/>
         <ivy:settings file="ivysettings.xml"/>
         <ivy:resolve file="ivy.xml"/>
-        <ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision].[ext]"/>
+
+        <echo message="=== Скачанные JAR файлы ==="/>
+        <echo message="Всего JAR файлов: ${toString:lib.dir}"/>
     </target>
 
-    <!--  process-resources — копирование ресурсов проекта  -->
-    <!--  Done  -->
-    <target name="process-resources" depends="resolve">
-        <copy todir="${build.resources.dir}">
-            <fileset dir="${resources.dir}">
-                <include name="**/*"/>
-            </fileset>
-        </copy>
-    </target>
 
+    <!--    Targets     -->
     <!--    compile - компиляция исходных кодов проекта    -->
-    <!--  Done  -->
-    <target name="compile" depends="process-resources">
-        <kotlinc output="${build.classes.dir}" includeRuntime="false">
-            <src path="${src.main.dir}"/>
+    <target name="compile" depends="resolve">
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${resources.dir}"/>
+
+        <!-- копируем ресурсы -->
+        <copy todir="${resources.dir}">
+            <fileset dir="${src.main.resources}" erroronmissingdir="false"/>
+        </copy>
+
+        <!-- настраиваем kotlin компилятор -->
+        <path id="kotlin.compiler.classpath">
+            <pathelement location="${kotlin.lib}/kotlin-compiler.jar"/>
+            <pathelement location="${kotlin.lib}/kotlin-stdlib.jar"/>
+            <pathelement location="${kotlin.lib}/kotlin-reflect.jar"/>
+            <pathelement location="${kotlin.lib}/trove4j.jar"/>
+        </path>
+
+        <typedef resource="org/jetbrains/kotlin/ant/antlib.xml"
+                 classpath="${kotlin.lib}/kotlin-ant.jar"/>
+
+        <!-- компилируем kotlin классы -->
+        <kotlinc output="${classes.dir}">
+            <src path="${src.main.kotlin}"/>
+            <compilerarg value="-Xjsr305=strict"/>
+            <compilerarg value="-Xannotation-default-target=param-property"/>
             <classpath refid="compile.classpath"/>
             <compilerarg value="-jvm-target"/>
             <compilerarg value="21"/>
         </kotlinc>
-
-        <copy todir="${build.classes.dir}">
-            <fileset dir="${build.resources.dir}">
-                <include name="**/*"/>
-            </fileset>
-        </copy>
     </target>
 
-
-    <!--    build - компиляция исходных кодов проекта и их упаковка в исполняемый jar-архив   -->
-    <!--  Done  -->
+    <!--    build - компиляция и упаковка в исполняемый jar-архив    -->
     <target name="build" depends="compile">
-        <jar destfile="${dist.dir}/${project.name}-${project.version}.jar"
-             basedir="${build.classes.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="${main.class}"/>
-                <attribute name="Implementation-Title" value="${project.name}"/>
-                <attribute name="Implementation-Version" value="${project.version}"/>
-            </manifest>
+        <mkdir dir="${dist.dir}"/>
+
+        <!-- копируем классы и ресурсы -->
+        <copy todir="${dist.dir}/classes">
+            <fileset dir="${classes.dir}"/>
+            <fileset dir="${resources.dir}"/>
+        </copy>
+
+        <!-- собираем JAR с указанием манифеста -->
+        <jar destfile="${dist.dir}/${ant.project.name}.jar"
+             manifest="MANIFEST.MF"
+             duplicate="preserve">
+
+            <fileset dir="${dist.dir}/classes"/>
+            <fileset dir="${lib.dir}" includes="*.jar"/>
         </jar>
+
+        <delete dir="${dist.dir}/classes"/>
     </target>
 
-    <!--    clean - удаление скомпилированных классов проекта и всех временных файлов   -->
-    <!--  Done  -->
+    <!--    clean - удаление скомпилированных классов проекта и всех временных файлов    -->
     <target name="clean">
         <delete dir="${build.dir}"/>
-    </target>
-
-    <!--    test - запуск junit-тестов проекта    -->
-    <target name="test" depends="build">
-
-    </target>
-
-    <!--    native2ascii - преобразование native2ascii для копий файлов локализации    -->
-    <target name="native2ascii">
-
-    </target>
-
-    <!--    scp - перемещение собранного проекта по scp на выбранный сервер по завершению сборки    -->
-    <target name="scp" depends="build">
-
-    </target>
-
-    <!--    music - воспроизведение музыки по завершению сборки    -->
-    <target name="music" depends="build">
-
-    </target>
-
-    <!--    xml - валидация всех xml-файлов в проекте    -->
-    <target name="xml">
-
-    </target>
-
-    <!--    doc - добавление в MANIFEST.MF MD5 и SHA-1 файлов проекта, а также генерация и добавление в архив Javadoc по всем классам проекта    -->
-    <target name="doc">
-
-    </target>
-
-    <!--    env - осуществляет сборку и запуск программы в альтернативных окружениях    -->
-    <target name="env">
-
-    </target>
-
-    <!--    history - если проект не удаётся скомпилировать, загружается предыдущая версия из репозитория git    -->
-    <target name="history" depends="compile">
-
-    </target>
-
-    <!--    diff - осуществляет проверку состояния рабочей копии, и, если изменения не касаются классов, указанных в файле параметров выполняет commit в репозиторий git    -->
-    <target name="diff">
-
-    </target>
-
-    <!--    report - в случае успешного прохождения тестов сохраняет отчет junit в формате xml, добавляет его в репозиторий git и выполняет commit    -->
-    <target name="report" depends="test">
-
-    </target>
-
-    <!--    team - осуществляет получение из svn-репозитория 2 предыдущих ревизий, их сборку и упаковку получившихся jar-файлов в zip-архив    -->
-    <target name="team" depends="build">
-
-    </target>
-
-    <!--    alt - создаёт альтернативную версию программы с измененными именами переменных и классов и упаковывает её в jar-архив    -->
-    <target name="alt" depends="build">
-
+        <delete dir="${lib.dir}"/>
     </target>
 </project>
