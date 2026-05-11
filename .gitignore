@@ -45,3 +45,4 @@ out/
 
 ### External libs ###
 lib/
+tools/*

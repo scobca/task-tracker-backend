@@ -8,6 +8,7 @@ import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.entities.Users
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.esc.tasktracker.security.JwtUtil
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

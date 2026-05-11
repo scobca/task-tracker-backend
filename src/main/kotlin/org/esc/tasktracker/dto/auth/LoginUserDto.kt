@@ -1,5 +1,7 @@
 package org.esc.tasktracker.dto.auth
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 /**
  * Data transfer object for user login requests.
  *
@@ -20,6 +22,9 @@ package org.esc.tasktracker.dto.auth
  * @since 1.0
  */
 data class LoginUserDto(
+    @JsonProperty("email")
     val email: String,
+
+    @JsonProperty("password")
     val password: String,
 )
