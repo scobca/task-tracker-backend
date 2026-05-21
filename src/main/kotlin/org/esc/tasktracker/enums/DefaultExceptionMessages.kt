@@ -1,12 +1,39 @@
 package org.esc.tasktracker.enums
 
-enum class DefaultExceptionMessages(private val message: String) {
-    USER_NOT_FOUND("Пользователь с таким ID не найден."),
-    TEAM_NOT_FOUND("Команда с таким ID не найдена."),
-    TEAM_MEMBERSHIP_NOT_FOUND("Записи об участии с таким набором параметров не найдено."),
-    TEAM_MEMBERSHIP_DOUBLE_RECORD("Этот пользователь уже состоит в этой команде");
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.MessageSource
+import org.springframework.stereotype.Component
+import java.util.Locale
 
-    companion object {
-        fun DefaultExceptionMessages.getMessage() = this.message
-    }
+@Component
+class DefaultExceptionMessages(
+    private val messageSource: MessageSource,
+) {
+
+    @Value($$"${spring.locales.default}")
+    private lateinit var defaultLocale: String
+
+    fun userNotFound() = messageSource.getMessage(
+        "error.user.not_found",
+        null,
+        Locale.of(defaultLocale)
+    )
+
+    fun teamNotFound() = messageSource.getMessage(
+        "error.team.not_found",
+        null,
+        Locale.of(defaultLocale)
+    )
+
+    fun teamMembershipNotFound() = messageSource.getMessage(
+        "error.team_membership.not_found",
+        null,
+        Locale.of(defaultLocale)
+    )
+
+    fun teamMembershipDoubleRecord() = messageSource.getMessage(
+        "error.team_membership.double_record",
+        null,
+        Locale.of(defaultLocale)
+    )
 }
