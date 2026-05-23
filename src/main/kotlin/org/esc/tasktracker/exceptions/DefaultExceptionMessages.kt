@@ -1,4 +1,4 @@
-package org.esc.tasktracker.enums
+package org.esc.tasktracker.exceptions
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource

@@ -5,7 +5,7 @@ import org.esc.tasktracker.dto.teams.CreateTeamDto
 import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.dto.teams.UpdateTeamDto
 import org.esc.tasktracker.entities.Teams
-import org.esc.tasktracker.enums.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.enums.TeamRoles
 import org.esc.tasktracker.interfaces.CrudService
 import org.esc.tasktracker.mappers.TeamsMapper

@@ -4,7 +4,7 @@ import org.esc.tasktracker.dto.filters.UsersFilterDto
 import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.dto.users.UpdateUserDto
 import org.esc.tasktracker.entities.Users
-import org.esc.tasktracker.enums.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
 import org.esc.tasktracker.extensions.takeIfOrThrow

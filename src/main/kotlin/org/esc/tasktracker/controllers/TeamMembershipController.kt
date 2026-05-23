@@ -4,7 +4,7 @@ import org.esc.tasktracker.dto.filters.TeamMembershipFilterDto
 import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.dto.teams.UpdateTeamMembershipDto
 import org.esc.tasktracker.entities.TeamMembership
-import org.esc.tasktracker.enums.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.extensions.toHttpResponse
 import org.esc.tasktracker.interfaces.CrudController
 import org.esc.tasktracker.services.TeamMembershipService

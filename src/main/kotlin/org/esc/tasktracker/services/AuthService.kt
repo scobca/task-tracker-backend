@@ -6,7 +6,7 @@ import org.esc.tasktracker.dto.jwt.CreateJwtToken
 import org.esc.tasktracker.dto.jwt.UserTokensDto
 import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.entities.Users
-import org.esc.tasktracker.enums.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.esc.tasktracker.security.JwtUtil
 import org.springframework.security.crypto.password.PasswordEncoder

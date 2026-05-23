@@ -1,7 +1,7 @@
 package org.esc.tasktracker.io
 
 import io.jsonwebtoken.security.SignatureException
-import org.esc.tasktracker.enums.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.AbstractHttpException
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.springframework.http.HttpStatus

@@ -3,8 +3,8 @@ package org.esc.tasktracker.unit.services
 import io.mockk.*
 import org.esc.tasktracker.dto.filters.TeamMembershipFilterDto
 import org.esc.tasktracker.entities.TeamMembership
-import org.esc.tasktracker.enums.DefaultExceptionMessages
-import org.esc.tasktracker.enums.DefaultExceptionMessages.Companion.getMessage
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages.Companion.getMessage
 import org.esc.tasktracker.enums.TeamRoles
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
