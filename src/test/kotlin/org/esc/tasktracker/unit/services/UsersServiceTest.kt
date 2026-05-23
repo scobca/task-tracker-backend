@@ -7,6 +7,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.esc.tasktracker.dto.filters.UsersFilterDto
 import org.esc.tasktracker.entities.Users
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
 import org.esc.tasktracker.mappers.UsersMapper
@@ -34,13 +35,17 @@ class UsersServiceTest {
     private val usersSpecifications = mockk<UsersSpecifications>()
     private val usersMapper = mockk<UsersMapper>()
     private val passwordEncoder = mockk<PasswordEncoder>()
-    private val service = UsersService(repository, usersSpecifications, usersMapper, passwordEncoder)
+    private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
+    private val service = UsersService(repository, usersSpecifications, usersMapper, passwordEncoder, defaultExceptionMessages)
     private lateinit var serviceSpy: UsersService
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        serviceSpy = spyk(UsersService(repository, usersSpecifications, usersMapper, passwordEncoder))
+        serviceSpy = spyk(UsersService(repository, usersSpecifications, usersMapper, passwordEncoder, defaultExceptionMessages))
+
+        every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
+        every { defaultExceptionMessages.userDoubleRecord() } returns "The user with this email already exists."
     }
 
     @Nested
@@ -114,18 +119,18 @@ class UsersServiceTest {
             every { repository.findById(any<Long>()) } returns Optional.empty()
 
             val exception = assertFailsWith<NotFoundException> {
-                service.getById(id = 1, throwable = true, message = "User not found.")
+                service.getById(id = 1, throwable = true, message = defaultExceptionMessages.userNotFound())
             }
 
             verify { repository.findById(any()) }
-            assertEquals(exception.message, "User not found.")
+            assertEquals(exception.message, defaultExceptionMessages.userNotFound())
         }
 
         @Test
         fun `should return null when user not found & throwable = false`() {
             every { repository.findById(any<Long>()) } returns Optional.empty()
 
-            val result = service.getById(id = 1, throwable = false, message = "User not found.")
+            val result = service.getById(id = 1, throwable = false, message = defaultExceptionMessages.userNotFound())
 
             verify { repository.findById(any()) }
             assertEquals(result, null)
@@ -155,7 +160,7 @@ class UsersServiceTest {
             }
 
             verify { repository.findByEmail(any()) }
-            assertEquals(exception.message, "Пользователя с email test@mail.ru не существует.")
+            assertEquals(exception.message, defaultExceptionMessages.userNotFound())
         }
 
         @Test
@@ -207,7 +212,7 @@ class UsersServiceTest {
             verify(exactly = 0) { passwordEncoder.encode(any()) }
             verify(exactly = 0) { repository.save(any()) }
 
-            assertEquals(exception.message, "Пользователь с таким email уже существует.")
+            assertEquals(exception.message, defaultExceptionMessages.userDoubleRecord())
         }
     }
 
@@ -295,7 +300,7 @@ class UsersServiceTest {
         fun `should throw on user not found`() {
             val dto = createUserUpdateDto()
 
-            every { serviceSpy.getById(dto.id, any(), any()) } throws NotFoundException("Пользователь с ID ${dto.id} не найден.")
+            every { serviceSpy.getById(dto.id, any(), any()) } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             assertThrows<NotFoundException> {
                 serviceSpy.update(dto)
@@ -323,7 +328,7 @@ class UsersServiceTest {
 
         @Test
         fun `should throw exception when user not found`() {
-            every { serviceSpy.getById(any(), any(), any()) } throws NotFoundException("Пользователь с ID 1 не найден.")
+            every { serviceSpy.getById(any(), any(), any()) } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             assertThrows<NotFoundException> {
                 serviceSpy.deleteById(1)

@@ -4,7 +4,6 @@ import io.mockk.*
 import org.esc.tasktracker.dto.filters.TeamMembershipFilterDto
 import org.esc.tasktracker.entities.TeamMembership
 import org.esc.tasktracker.exceptions.DefaultExceptionMessages
-import org.esc.tasktracker.exceptions.DefaultExceptionMessages.Companion.getMessage
 import org.esc.tasktracker.enums.TeamRoles
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
@@ -32,13 +31,35 @@ class TeamMembershipServiceTest {
     private val usersService = mockk<UsersService>()
     private val teamsMapper = mockk<TeamsMapper>()
     private val specifications = mockk<TeamMembershipSpecifications>()
-    private val service = TeamMembershipService(repository, teamsService, usersService, teamsMapper, specifications)
+    private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
+    private val service = TeamMembershipService(
+        repository,
+        teamsService,
+        usersService,
+        teamsMapper,
+        specifications,
+        defaultExceptionMessages
+    )
     private lateinit var serviceSpy: TeamMembershipService
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        serviceSpy = spyk(TeamMembershipService(repository, teamsService, usersService, teamsMapper, specifications))
+        serviceSpy = spyk(
+            TeamMembershipService(
+                repository,
+                teamsService,
+                usersService,
+                teamsMapper,
+                specifications,
+                defaultExceptionMessages
+            )
+        )
+
+        every { defaultExceptionMessages.teamMembershipNotFound() } returns "No record of participation with this set of parameters was found."
+        every { defaultExceptionMessages.teamMembershipDoubleRecord() } returns "This user is already a member of this team."
+        every { defaultExceptionMessages.teamNotFound() } returns "A team with this ID was not found."
+        every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
     }
 
     @Nested
@@ -95,7 +116,7 @@ class TeamMembershipServiceTest {
             val result = service.getById(
                 teamMembership.id,
                 throwable = true,
-                message = DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+                message = defaultExceptionMessages.teamMembershipNotFound()
             )
 
             assertEquals(teamMembership, result)
@@ -109,12 +130,12 @@ class TeamMembershipServiceTest {
                 service.getById(
                     1,
                     throwable = true,
-                    message = DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+                    message = defaultExceptionMessages.teamMembershipNotFound()
                 )
             }
 
             verify { repository.findById(any()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipNotFound())
         }
 
         @Test
@@ -124,7 +145,7 @@ class TeamMembershipServiceTest {
             val result = service.getById(
                 1,
                 throwable = false,
-                message = DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+                message = defaultExceptionMessages.teamMembershipNotFound()
             )
 
             verify { repository.findById(any()) }
@@ -154,7 +175,7 @@ class TeamMembershipServiceTest {
             val exception = assertFailsWith<NotFoundException> { service.getById(userId = 1, teamId = 1) }
 
             verify { repository.findByUserIdAndTeamId(any(), any()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipNotFound())
         }
     }
 
@@ -173,14 +194,14 @@ class TeamMembershipServiceTest {
                 usersService.getById(
                     any(),
                     throwable = any(),
-                    message = DefaultExceptionMessages.USER_NOT_FOUND.getMessage()
+                    message = any()
                 )
             } returns user
             every {
                 teamsService.getById(
                     any(),
                     throwable = any(),
-                    message = DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage()
+                    message = any()
                 )
             } returns team
             every { teamsMapper.teamMembershipFromDto(any(), any(), any()) } returns teamMembership
@@ -214,7 +235,7 @@ class TeamMembershipServiceTest {
                 teamsMapper.teamMembershipFromDto(any(), any(), any())
                 repository.save(any())
             }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_DOUBLE_RECORD.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipDoubleRecord())
         }
 
         @Test
@@ -228,7 +249,7 @@ class TeamMembershipServiceTest {
                     any(),
                     any()
                 )
-            } throws NotFoundException(DefaultExceptionMessages.USER_NOT_FOUND.getMessage())
+            } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             val exception = assertFailsWith<NotFoundException> { service.create(dto) }
 
@@ -241,7 +262,7 @@ class TeamMembershipServiceTest {
                 teamsMapper.teamMembershipFromDto(any(), any(), any())
                 repository.save(any())
             }
-            assertEquals(exception.message, DefaultExceptionMessages.USER_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.userNotFound())
         }
 
         @Test
@@ -257,7 +278,7 @@ class TeamMembershipServiceTest {
                     any(),
                     any()
                 )
-            } throws NotFoundException(DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())
+            } throws NotFoundException(defaultExceptionMessages.teamNotFound())
 
             val exception = assertFailsWith<NotFoundException> { service.create(dto) }
 
@@ -270,7 +291,7 @@ class TeamMembershipServiceTest {
                 teamsMapper.teamMembershipFromDto(any(), any(), any())
                 repository.save(any())
             }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamNotFound())
         }
     }
 
@@ -307,13 +328,13 @@ class TeamMembershipServiceTest {
                     any<Long>(),
                     any<Long>()
                 )
-            } throws NotFoundException(DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            } throws NotFoundException(defaultExceptionMessages.teamMembershipNotFound())
 
             val exception = assertFailsWith<NotFoundException> { serviceSpy.update(dto) }
 
             verify { serviceSpy.getById(any<Long>(), any<Long>()) }
             verify(exactly = 0) { repository.save(any()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipNotFound())
         }
     }
 
@@ -339,14 +360,14 @@ class TeamMembershipServiceTest {
         @Test
         fun `should throw NotFoundException when team membership not found`() {
             every { serviceSpy.getById(any<Long>(), any<Boolean>(), any()) } throws NotFoundException(
-                DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+                defaultExceptionMessages.teamMembershipNotFound()
             )
 
             val exception = assertFailsWith<NotFoundException> { serviceSpy.deleteById(1) }
 
             verify { serviceSpy.getById(any<Long>(), any<Boolean>(), any()) }
             verify(exactly = 0) { repository.delete(any<TeamMembership>()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipNotFound())
         }
     }
 
@@ -376,13 +397,13 @@ class TeamMembershipServiceTest {
                     any<Long>(),
                     any<Long>()
                 )
-            } throws NotFoundException(DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            } throws NotFoundException(defaultExceptionMessages.teamMembershipNotFound())
 
             val exception = assertFailsWith<NotFoundException> { serviceSpy.deleteById(1, 1) }
 
             verify { serviceSpy.getById(any<Long>(), any<Long>()) }
             verify(exactly = 0) { repository.delete(any<TeamMembership>()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamMembershipNotFound())
         }
     }
 
@@ -407,13 +428,19 @@ class TeamMembershipServiceTest {
 
         @Test
         fun `should return NotFoundException when team not found`() {
-            every { teamsService.getById(any<Long>(), any(), any()) } throws NotFoundException(DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())
+            every {
+                teamsService.getById(
+                    any<Long>(),
+                    any(),
+                    any()
+                )
+            } throws NotFoundException(defaultExceptionMessages.teamNotFound())
 
-            val exception = assertFailsWith<NotFoundException> { serviceSpy.deleteAllMembers(1)}
+            val exception = assertFailsWith<NotFoundException> { serviceSpy.deleteAllMembers(1) }
 
             verify { teamsService.getById(any<Long>(), any(), any()) }
             verify(exactly = 0) { repository.deleteAllByTeam(any()) }
-            assertEquals(exception.message, DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())
+            assertEquals(exception.message, defaultExceptionMessages.teamNotFound())
 
         }
     }

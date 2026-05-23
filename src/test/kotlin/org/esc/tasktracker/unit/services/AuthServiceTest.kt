@@ -1,6 +1,7 @@
 package org.esc.tasktracker.unit.services
 
 import io.mockk.*
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.esc.tasktracker.security.JwtUtil
@@ -11,6 +12,7 @@ import org.esc.tasktracker.unit.generators.createUser
 import org.esc.tasktracker.unit.generators.createUserCreateDto
 import org.esc.tasktracker.unit.generators.updateUsersTokensDto
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -22,7 +24,16 @@ class AuthServiceTest {
     private var usersService = mockk<UsersService>()
     private var jwtUtil = mockk<JwtUtil>()
     private var passwordEncoder = mockk<PasswordEncoder>()
-    private var service = AuthService(usersService, jwtUtil, passwordEncoder)
+    private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
+
+    private var service = AuthService(usersService, jwtUtil, passwordEncoder, defaultExceptionMessages)
+
+    @BeforeEach
+    fun setup() {
+        every { defaultExceptionMessages.userDoubleRecord() } returns "The user with this email already exists."
+        every { defaultExceptionMessages.wrongUsernameOrPassword() } returns "Invalid username or password."
+        every { defaultExceptionMessages.wrongRefreshToken() } returns "Invalid refresh token."
+    }
 
     @Nested
     inner class RegisterTests {
@@ -58,7 +69,7 @@ class AuthServiceTest {
             val createUserDto = createUserCreateDto()
             val uuid = UUID.randomUUID()
 
-            every { usersService.create(createUserDto) } throws DoubleRecordException("Пользователь с email уже существует.")
+            every { usersService.create(createUserDto) } throws DoubleRecordException(defaultExceptionMessages.userDoubleRecord())
 
             assertThrows<DoubleRecordException> { service.register(createUserDto, uuid) }
 
@@ -112,7 +123,7 @@ class AuthServiceTest {
 
             val exception = assertThrows<JwtAuthenticationException> { service.login(loginDto, uuid) }
 
-            assertEquals(exception.message, "Неверные логин или пароль.")
+            assertEquals(exception.message, defaultExceptionMessages.wrongUsernameOrPassword())
 
             verify {
                 usersService.getByEmail(user.email, false)
@@ -135,7 +146,7 @@ class AuthServiceTest {
 
             val exception = assertThrows<JwtAuthenticationException> { service.login(loginDto, uuid) }
 
-            assertEquals(exception.message, "Неверные логин или пароль.")
+            assertEquals(exception.message, defaultExceptionMessages.wrongUsernameOrPassword())
 
             verify { usersService.getByEmail(loginDto.email, false) }
             verify(exactly = 0) {
@@ -216,7 +227,7 @@ class AuthServiceTest {
 
             val exception = assertThrows<JwtAuthenticationException> { service.updateTokens(dto, uuid) }
 
-            assertEquals(exception.message, "Неверный refresh-токен.")
+            assertEquals(exception.message, defaultExceptionMessages.wrongRefreshToken())
 
             verify(exactly = 2) { jwtUtil.verifyToken(any(), any<UUID>(), throwTimeLimit = any<Boolean>()) }
             verify { jwtUtil.getUserFromToken(any()) }

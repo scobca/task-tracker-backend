@@ -4,6 +4,7 @@ import io.mockk.*
 import org.esc.tasktracker.dto.filters.TeamsFilterDto
 import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.entities.Teams
+import org.esc.tasktracker.exceptions.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.NotFoundException
 import org.esc.tasktracker.mappers.TeamsMapper
 import org.esc.tasktracker.repositories.TeamsRepository
@@ -32,14 +33,34 @@ class TeamsServiceTest {
     private val teamsSpecifications = mockk<TeamsSpecifications>()
     private val usersService = mockk<UsersService>()
     private val applicationEventPublisher = mockk<ApplicationEventPublisher>()
-    private val service = TeamsService(repository, teamsMapper, teamsSpecifications, usersService, applicationEventPublisher)
+    private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
+    private val service = TeamsService(
+        repository,
+        teamsMapper,
+        teamsSpecifications,
+        usersService,
+        applicationEventPublisher,
+        defaultExceptionMessages
+    )
 
     private lateinit var serviceSpy: TeamsService
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        serviceSpy = spyk(TeamsService(repository, teamsMapper, teamsSpecifications, usersService, applicationEventPublisher))
+        serviceSpy = spyk(
+            TeamsService(
+                repository,
+                teamsMapper,
+                teamsSpecifications,
+                usersService,
+                applicationEventPublisher,
+                defaultExceptionMessages
+            )
+        )
+
+        every { defaultExceptionMessages.teamNotFound() } returns "A team with this ID was not found."
+        every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
     }
 
     @Nested
@@ -109,18 +130,18 @@ class TeamsServiceTest {
             every { repository.findById(any<Long>()) } returns Optional.empty()
 
             val exception = assertFailsWith<NotFoundException> {
-                service.getById(id = 1, throwable = true, message = "Команда не найдена")
+                service.getById(id = 1, throwable = true, message = defaultExceptionMessages.teamNotFound())
             }
 
             verify { repository.findById(any()) }
-            assertEquals(exception.message, "Команда не найдена")
+            assertEquals(exception.message, defaultExceptionMessages.teamNotFound())
         }
 
         @Test
         fun `should return null when team not found & throwable = false`() {
             every { repository.findById(any<Long>()) } returns Optional.empty()
 
-            val result = service.getById(id = 1, throwable = false, message = "Команда не найдена")
+            val result = service.getById(id = 1, throwable = false, message = defaultExceptionMessages.teamNotFound())
 
             verify { repository.findById(any()) }
             assertEquals(result, null)
@@ -152,12 +173,12 @@ class TeamsServiceTest {
         fun `should throw exception when user not found`() {
             val user = createUser()
 
-            every { usersService.getById(any(), any(), any()) } throws NotFoundException("Пользователь не найден")
+            every { usersService.getById(any(), any(), any()) } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             val exception =
                 assertFailsWith<NotFoundException> { service.getByUserId(user.id, pageable = Pageable.unpaged()) }
 
-            assertEquals(exception.message, "Пользователь не найден")
+            assertEquals(exception.message, defaultExceptionMessages.userNotFound())
             verify { usersService.getById(any(), any(), any()) }
             verify(exactly = 0) { repository.findByOwner(any(), any()) }
         }
@@ -198,7 +219,7 @@ class TeamsServiceTest {
                     throwable = true,
                     message = any()
                 )
-            } throws NotFoundException("Пользователь не найден")
+            } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             val exception = assertFailsWith<NotFoundException> {
                 service.create(dto)
@@ -210,7 +231,7 @@ class TeamsServiceTest {
                 repository.save(any())
             }
 
-            assertEquals(exception.message, "Пользователь не найден")
+            assertEquals(exception.message, defaultExceptionMessages.userNotFound())
         }
     }
 
@@ -262,7 +283,7 @@ class TeamsServiceTest {
             val result = serviceSpy.update(dto)
 
             verify { serviceSpy.getById(dto.id, any(), any()) }
-            verify { usersService.getById(10L, true, "Пользователь с ID 10 не найден.") }
+            verify { usersService.getById(10L, true, any()) }
             verify { repository.save(team) }
 
             assertEquals(newOwner.id, result.owner.id)
@@ -291,7 +312,7 @@ class TeamsServiceTest {
 
             verify {
                 serviceSpy.getById(dto.id, any(), any())
-                usersService.getById(10L, true, "Пользователь с ID 10 не найден.")
+                usersService.getById(10L, true, any())
                 repository.save(team)
             }
 
@@ -317,7 +338,7 @@ class TeamsServiceTest {
         fun `should throw on team not found`() {
             val dto = createTeamUpdateDto(id = 1L)
 
-            every { serviceSpy.getById(dto.id, any(), any()) } throws NotFoundException("Команда с ID 1 не найдена")
+            every { serviceSpy.getById(dto.id, any(), any()) } throws NotFoundException(defaultExceptionMessages.teamNotFound())
 
             assertFailsWith<NotFoundException> {
                 serviceSpy.update(dto)
@@ -334,14 +355,20 @@ class TeamsServiceTest {
             val dto = createTeamUpdateDto(id = 1L, userId = 999L)
 
             every { serviceSpy.getById(dto.id, any(), any()) } returns team
-            every { usersService.getById(999L, true, any()) } throws NotFoundException("Пользователь с ID 999 не найден.")
+            every {
+                usersService.getById(
+                    999L,
+                    true,
+                    any()
+                )
+            } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             assertFailsWith<NotFoundException> {
                 serviceSpy.update(dto)
             }
 
             verify { serviceSpy.getById(dto.id, any(), any()) }
-            verify { usersService.getById(999L, true, "Пользователь с ID 999 не найден.") }
+            verify { usersService.getById(999L, true, any()) }
             verify(exactly = 0) { repository.save(any()) }
         }
     }
@@ -363,7 +390,7 @@ class TeamsServiceTest {
 
         @Test
         fun `should throw exception when user not found`() {
-            every { serviceSpy.getById(any(), any(), any()) } throws NotFoundException("Команда не найдена")
+            every { serviceSpy.getById(any(), any(), any()) } throws NotFoundException(defaultExceptionMessages.teamNotFound())
 
             assertFailsWith<NotFoundException> {
                 serviceSpy.deleteById(1)
