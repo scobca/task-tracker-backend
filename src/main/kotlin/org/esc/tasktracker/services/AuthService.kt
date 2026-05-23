@@ -6,6 +6,7 @@ import org.esc.tasktracker.dto.jwt.CreateJwtToken
 import org.esc.tasktracker.dto.jwt.UserTokensDto
 import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.entities.Users
+import org.esc.tasktracker.enums.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.esc.tasktracker.security.JwtUtil
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -33,6 +34,7 @@ class AuthService(
     private val usersService: UsersService,
     private val jwtUtil: JwtUtil,
     private val passwordEncoder: PasswordEncoder,
+    private val defaultExceptionMessages: DefaultExceptionMessages,
 ) {
 
     /**
@@ -65,10 +67,10 @@ class AuthService(
     fun login(item: LoginUserDto, sessionId: UUID): UserTokensDto {
         return usersService.getByEmail(item.email, throwable = false)?.let { user ->
             if (!passwordEncoder.matches(item.password, user.password)) {
-                throw JwtAuthenticationException("Неверные логин или пароль.")
+                throw JwtAuthenticationException(defaultExceptionMessages.wrongUsernameOrPassword())
             }
             generateTokens(user, sessionId)
-        } ?: throw JwtAuthenticationException("Неверные логин или пароль.")
+        } ?: throw JwtAuthenticationException(defaultExceptionMessages.wrongUsernameOrPassword())
     }
 
     /**
@@ -94,7 +96,7 @@ class AuthService(
 
         return jwtUtil.getUserFromToken(data.refreshToken)
             ?.let { user -> generateTokens(user, sessionId) }
-            ?: throw JwtAuthenticationException("Неверный refresh-токен.")
+            ?: throw JwtAuthenticationException(defaultExceptionMessages.wrongRefreshToken())
     }
 
     /**

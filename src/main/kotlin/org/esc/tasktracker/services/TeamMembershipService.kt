@@ -5,7 +5,6 @@ import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.dto.teams.UpdateTeamMembershipDto
 import org.esc.tasktracker.entities.TeamMembership
 import org.esc.tasktracker.enums.DefaultExceptionMessages
-import org.esc.tasktracker.enums.DefaultExceptionMessages.Companion.getMessage
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
 import org.esc.tasktracker.interfaces.CrudService
@@ -25,7 +24,8 @@ class TeamMembershipService(
     private val teamsService: TeamsService,
     private val usersService: UsersService,
     private val teamsMapper: TeamsMapper,
-    private val specifications: TeamMembershipSpecifications
+    private val specifications: TeamMembershipSpecifications,
+    private val defaultExceptionMessages: DefaultExceptionMessages,
 ) : CrudService<TeamMembership, Long, CreateTeamMembershipDto, UpdateTeamMembershipDto, TeamMembershipFilterDto> {
 
     override fun getAll(filters: TeamMembershipFilterDto?, pageable: Pageable): Page<TeamMembership> {
@@ -40,7 +40,7 @@ class TeamMembershipService(
 
     fun getById(userId: Long, teamId: Long): TeamMembership {
         return repository.findByUserIdAndTeamId(userId, teamId) ?: throw NotFoundException(
-            DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND
+            defaultExceptionMessages.teamMembershipNotFound()
         )
     }
 
@@ -49,12 +49,12 @@ class TeamMembershipService(
     override fun create(item: CreateTeamMembershipDto): TeamMembership {
         repository.findByUserIdAndTeamId(item.userId, item.teamId)?.let {
             throw DoubleRecordException(
-                DefaultExceptionMessages.TEAM_MEMBERSHIP_DOUBLE_RECORD
+                defaultExceptionMessages.teamMembershipDoubleRecord()
             )
         }
 
-        val user = usersService.getById(item.userId, message = DefaultExceptionMessages.USER_NOT_FOUND.getMessage())!!
-        val team = teamsService.getById(item.teamId, message = DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())!!
+        val user = usersService.getById(item.userId, message = defaultExceptionMessages.userNotFound())!!
+        val team = teamsService.getById(item.teamId, message = defaultExceptionMessages.teamNotFound())!!
 
         return repository.save(teamsMapper.teamMembershipFromDto(user, team, item.role))
     }
@@ -73,7 +73,7 @@ class TeamMembershipService(
         return getById(
             id,
             throwable = true,
-            message = DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+            message = defaultExceptionMessages.teamMembershipNotFound()
         )!!
             .let {
                 repository.delete(it)
@@ -91,7 +91,7 @@ class TeamMembershipService(
 
     @Transactional
     fun deleteAllMembers(teamId: Long): String {
-        return teamsService.getById(teamId, message = DefaultExceptionMessages.TEAM_NOT_FOUND.getMessage())!!
+        return teamsService.getById(teamId, message = defaultExceptionMessages.teamNotFound())!!
             .let {
                 repository.deleteAllByTeam(it)
                 "Все участники команды удалены."

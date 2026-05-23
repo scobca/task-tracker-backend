@@ -1,6 +1,7 @@
 package org.esc.tasktracker.io
 
 import io.jsonwebtoken.security.SignatureException
+import org.esc.tasktracker.enums.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.AbstractHttpException
 import org.esc.tasktracker.exceptions.JwtAuthenticationException
 import org.springframework.http.HttpStatus
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
  * @since 1.0
  */
 @RestControllerAdvice
-class GlobalExceptionsHandler {
+class GlobalExceptionsHandler(private val defaultExceptionMessages: DefaultExceptionMessages) {
 
     /**
      * Handles all unhandled exceptions that don't have specific handlers.
@@ -65,7 +66,7 @@ class GlobalExceptionsHandler {
     fun handleNotFoundException(ex: AbstractHttpException): ResponseEntity<BasicErrorResponse> {
         val errorResponse = BasicErrorResponse(
             status = ex.status,
-            message = ex.message?: "Exception occurred",
+            message = ex.message?: defaultExceptionMessages.exceptionOccurred(),
         )
 
         return ResponseEntity(errorResponse, HttpStatus.valueOf(ex.status))
@@ -86,7 +87,7 @@ class GlobalExceptionsHandler {
     fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<BasicErrorResponse> {
         val errorResponse = BasicErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
-            message = "Произошла ошибка при валидации входных параметров. Проверьте отправляемые данные."
+            message = defaultExceptionMessages.badValidation()
         )
 
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
@@ -129,7 +130,7 @@ class GlobalExceptionsHandler {
         val errorResponse = ex.message?.let {
             BasicErrorResponse(
                 status = HttpStatus.LOCKED.value(),
-                message = "Jwt token verification failed. JWT validity cannot be asserted and should not be trusted."
+                message = defaultExceptionMessages.badJWTVerification()
             )
         }
 
@@ -151,7 +152,7 @@ class GlobalExceptionsHandler {
         val errorResponse = ex.message?.let {
             BasicErrorResponse(
                 status = HttpStatus.FORBIDDEN.value(),
-                message = "Access denied. You don't have permission to access this resource."
+                message = defaultExceptionMessages.accessDenied()
             )
         }
 

@@ -5,7 +5,6 @@ import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.dto.teams.UpdateTeamMembershipDto
 import org.esc.tasktracker.entities.TeamMembership
 import org.esc.tasktracker.enums.DefaultExceptionMessages
-import org.esc.tasktracker.enums.DefaultExceptionMessages.Companion.getMessage
 import org.esc.tasktracker.extensions.toHttpResponse
 import org.esc.tasktracker.interfaces.CrudController
 import org.esc.tasktracker.services.TeamMembershipService
@@ -16,7 +15,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/teams/members")
-class TeamMembershipController(private val service: TeamMembershipService) :
+class TeamMembershipController(
+    private val service: TeamMembershipService,
+    private val defaultExceptionMessages: DefaultExceptionMessages,
+) :
     CrudController<TeamMembership, Long, CreateTeamMembershipDto, UpdateTeamMembershipDto, TeamMembershipFilterDto> {
 
     @GetMapping
@@ -32,7 +34,7 @@ class TeamMembershipController(private val service: TeamMembershipService) :
         service.getById(
             id,
             throwable = true,
-            message = DefaultExceptionMessages.TEAM_MEMBERSHIP_NOT_FOUND.getMessage()
+            message = defaultExceptionMessages.teamMembershipNotFound()
         )!!
 
     @GetMapping("/by-user/{userId}/by-team/{teamId}")

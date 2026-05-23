@@ -5,6 +5,7 @@ import org.esc.tasktracker.dto.teams.CreateTeamDto
 import org.esc.tasktracker.dto.teams.CreateTeamMembershipDto
 import org.esc.tasktracker.dto.teams.UpdateTeamDto
 import org.esc.tasktracker.entities.Teams
+import org.esc.tasktracker.enums.DefaultExceptionMessages
 import org.esc.tasktracker.enums.TeamRoles
 import org.esc.tasktracker.interfaces.CrudService
 import org.esc.tasktracker.mappers.TeamsMapper
@@ -44,7 +45,8 @@ class TeamsService(
     private val teamsMapper: TeamsMapper,
     private val teamsSpecifications: TeamsSpecifications,
     private val usersService: UsersService,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val defaultExceptionMessages: DefaultExceptionMessages,
 ) :
     CrudService<Teams, Long, CreateTeamDto, UpdateTeamDto, TeamsFilterDto> {
 
@@ -85,7 +87,7 @@ class TeamsService(
      * @throws org.esc.tasktracker.exceptions.NotFoundException If no user exists with the provided ID
      */
     fun getByUserId(userId: Long, pageable: Pageable): Page<Teams> {
-        return usersService.getById(userId, throwable = true, message = "Пользователь с ID $userId не найден.")!!
+        return usersService.getById(userId, throwable = true, message = defaultExceptionMessages.userNotFound())!!
             .let { user -> repository.findByOwner(user, pageable) }
     }
 
@@ -106,7 +108,7 @@ class TeamsService(
         val user = usersService.getById(
             item.userId,
             throwable = true,
-            message = "Пользователь с ID ${item.userId} не найден."
+            message = defaultExceptionMessages.userNotFound()
         )!!
 
         repository.save(teamsMapper.teamFromDto(item, user))
@@ -138,7 +140,7 @@ class TeamsService(
      */
     @Transactional
     override fun update(item: UpdateTeamDto): Teams {
-        val team = getById(item.id, message = "Команда с ID ${item.id} не найдена")!!
+        val team = getById(item.id, message = defaultExceptionMessages.teamNotFound())!!
 
         item.name?.let { team.name = it.trim() }
         item.description?.let { team.description = it }
@@ -146,7 +148,7 @@ class TeamsService(
             val user = usersService.getById(
                 it,
                 throwable = true,
-                message = "Пользователь с ID ${item.userId} не найден."
+                message = defaultExceptionMessages.userNotFound()
             )!!
 
             team.owner = user
@@ -167,7 +169,7 @@ class TeamsService(
      */
     @Transactional
     override fun deleteById(id: Long): String {
-        getById(id, message = "Команда с ID $id не найдена")?.let {
+        getById(id, message = defaultExceptionMessages.teamNotFound())?.let {
             repository.deleteById(id)
         }
 

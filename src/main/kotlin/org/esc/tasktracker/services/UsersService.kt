@@ -4,6 +4,7 @@ import org.esc.tasktracker.dto.filters.UsersFilterDto
 import org.esc.tasktracker.dto.users.CreateUserDto
 import org.esc.tasktracker.dto.users.UpdateUserDto
 import org.esc.tasktracker.entities.Users
+import org.esc.tasktracker.enums.DefaultExceptionMessages
 import org.esc.tasktracker.exceptions.DoubleRecordException
 import org.esc.tasktracker.exceptions.NotFoundException
 import org.esc.tasktracker.extensions.takeIfOrThrow
@@ -44,6 +45,7 @@ class UsersService(
     private val usersSpecifications: UsersSpecifications,
     private val usersMapper: UsersMapper,
     private val passwordEncoder: PasswordEncoder,
+    private val defaultExceptionMessages: DefaultExceptionMessages,
 ) : CrudService<Users, Long, CreateUserDto, UpdateUserDto, UsersFilterDto> {
 
     /**
@@ -83,7 +85,7 @@ class UsersService(
      * @throws NotFoundException If user not found and [throwable] is true
      */
     fun getByEmail(email: String, throwable: Boolean = true): Users? = repository.findByEmail(email)
-        ?: if (throwable) throw NotFoundException("Пользователя с email $email не существует.") else null
+        ?: if (throwable) throw NotFoundException(defaultExceptionMessages.userNotFound()) else null
 
     /**
      * Creates a new user with the provided data.
@@ -103,7 +105,7 @@ class UsersService(
         getByEmail(
             item.email,
             throwable = false
-        )?.let { throw DoubleRecordException("Пользователь с таким email уже существует.") }
+        )?.let { throw DoubleRecordException(defaultExceptionMessages.userDoubleRecord()) }
 
         return repository.save(usersMapper.userFromDto(item).copy(password = passwordEncoder.encode(item.password)!!))
     }
@@ -126,14 +128,14 @@ class UsersService(
      */
     @Transactional
     override fun update(item: UpdateUserDto): Users {
-        val user = getById(item.id, message = "Пользователь с ID ${item.id} не найден.")!!
+        val user = getById(item.id, message = defaultExceptionMessages.userNotFound())!!
 
         item.name?.let { user.name = it }
         item.email
             ?.takeIf { user.email != it }
             ?.takeIfOrThrow(
                 predicate = { email -> getByEmail(email, false) == null },
-                exception = { DoubleRecordException("Email ${item.email} занят") }
+                exception = { DoubleRecordException(defaultExceptionMessages.userDoubleRecord()) }
             )?.also { user.email = it }
 
         return repository.save(user)
@@ -151,7 +153,7 @@ class UsersService(
      */
     @Transactional
     override fun deleteById(id: Long): String {
-        getById(id, message = "Пользователь с ID $id не найден.")?.let {
+        getById(id, message = defaultExceptionMessages.userNotFound())?.let {
             repository.deleteById(id)
         }
 
