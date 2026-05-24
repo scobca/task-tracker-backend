@@ -14,6 +14,7 @@ import org.esc.tasktracker.services.TeamMembershipService
 import org.esc.tasktracker.services.TeamsService
 import org.esc.tasktracker.services.UsersService
 import org.esc.tasktracker.unit.generators.*
+import org.esc.tasktracker.utils.MessageResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.springframework.data.domain.PageImpl
@@ -31,6 +32,7 @@ class TeamMembershipServiceTest {
     private val usersService = mockk<UsersService>()
     private val teamsMapper = mockk<TeamsMapper>()
     private val specifications = mockk<TeamMembershipSpecifications>()
+    private val messageResolver = mockk<MessageResolver>()
     private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
     private val service = TeamMembershipService(
         repository,
@@ -38,6 +40,7 @@ class TeamMembershipServiceTest {
         usersService,
         teamsMapper,
         specifications,
+        messageResolver,
         defaultExceptionMessages
     )
     private lateinit var serviceSpy: TeamMembershipService
@@ -52,6 +55,7 @@ class TeamMembershipServiceTest {
                 usersService,
                 teamsMapper,
                 specifications,
+                messageResolver,
                 defaultExceptionMessages
             )
         )
@@ -60,6 +64,10 @@ class TeamMembershipServiceTest {
         every { defaultExceptionMessages.teamMembershipDoubleRecord() } returns "This user is already a member of this team."
         every { defaultExceptionMessages.teamNotFound() } returns "A team with this ID was not found."
         every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
+
+        every { messageResolver.getMessage("response.teamMembership.deleteById") } returns "Участник команды удален успешно."
+        every { messageResolver.getMessage("response.teamMembership.deleteAllByTeam") } returns "Все участники команды удалены."
+        every { messageResolver.getMessage("response.teamMembership.deleteAll") } returns "Все записи об участиях в командах удалены."
     }
 
     @Nested
@@ -354,7 +362,7 @@ class TeamMembershipServiceTest {
                 serviceSpy.getById(any<Long>(), any<Boolean>(), any())
                 repository.delete(any<TeamMembership>())
             }
-            assertEquals(result, "Участник команды удален.")
+            assertEquals(result, messageResolver.getMessage("response.teamMembership.deleteById"))
         }
 
         @Test
@@ -387,7 +395,7 @@ class TeamMembershipServiceTest {
                 serviceSpy.getById(any<Long>(), any<Long>())
                 repository.delete(any<TeamMembership>())
             }
-            assertEquals(result, "Участник команды удален.")
+            assertEquals(result, messageResolver.getMessage("response.teamMembership.deleteById"))
         }
 
         @Test
@@ -423,7 +431,7 @@ class TeamMembershipServiceTest {
                 teamsService.getById(any<Long>(), any(), any())
                 repository.deleteAllByTeam(any())
             }
-            assertEquals(result, "Все участники команды удалены.")
+            assertEquals(result, messageResolver.getMessage("response.teamMembership.deleteAllByTeam"))
         }
 
         @Test
@@ -455,7 +463,7 @@ class TeamMembershipServiceTest {
             val result = service.deleteAll()
 
             verify { repository.deleteAll() }
-            assertEquals(result, "Все записи об участиях в командах удалены.")
+            assertEquals(result, messageResolver.getMessage("response.teamMembership.deleteAll"))
         }
     }
 

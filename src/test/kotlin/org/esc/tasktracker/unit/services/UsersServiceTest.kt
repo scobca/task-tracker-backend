@@ -17,6 +17,7 @@ import org.esc.tasktracker.services.UsersService
 import org.esc.tasktracker.unit.generators.createUser
 import org.esc.tasktracker.unit.generators.createUserCreateDto
 import org.esc.tasktracker.unit.generators.createUserUpdateDto
+import org.esc.tasktracker.utils.MessageResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
@@ -35,17 +36,38 @@ class UsersServiceTest {
     private val usersSpecifications = mockk<UsersSpecifications>()
     private val usersMapper = mockk<UsersMapper>()
     private val passwordEncoder = mockk<PasswordEncoder>()
+    private val messageResolver = mockk<MessageResolver>()
     private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
-    private val service = UsersService(repository, usersSpecifications, usersMapper, passwordEncoder, defaultExceptionMessages)
+    private val service = UsersService(
+        repository,
+        usersSpecifications,
+        usersMapper,
+        passwordEncoder,
+        messageResolver,
+        defaultExceptionMessages
+    )
     private lateinit var serviceSpy: UsersService
 
     @BeforeEach
     fun setup() {
         MockKAnnotations.init(this)
-        serviceSpy = spyk(UsersService(repository, usersSpecifications, usersMapper, passwordEncoder, defaultExceptionMessages))
+        serviceSpy =
+            spyk(
+                UsersService(
+                    repository,
+                    usersSpecifications,
+                    usersMapper,
+                    passwordEncoder,
+                    messageResolver,
+                    defaultExceptionMessages
+                )
+            )
 
         every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
         every { defaultExceptionMessages.userDoubleRecord() } returns "The user with this email already exists."
+
+        every { messageResolver.getMessage("response.user.deleteById") } returns "Пользователь удален успешно."
+        every { messageResolver.getMessage("response.user.deleteAll") } returns "Все пользователи удалены успешно."
     }
 
     @Nested
@@ -300,7 +322,13 @@ class UsersServiceTest {
         fun `should throw on user not found`() {
             val dto = createUserUpdateDto()
 
-            every { serviceSpy.getById(dto.id, any(), any()) } throws NotFoundException(defaultExceptionMessages.userNotFound())
+            every {
+                serviceSpy.getById(
+                    dto.id,
+                    any(),
+                    any()
+                )
+            } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             assertThrows<NotFoundException> {
                 serviceSpy.update(dto)
@@ -328,7 +356,13 @@ class UsersServiceTest {
 
         @Test
         fun `should throw exception when user not found`() {
-            every { serviceSpy.getById(any(), any(), any()) } throws NotFoundException(defaultExceptionMessages.userNotFound())
+            every {
+                serviceSpy.getById(
+                    any(),
+                    any(),
+                    any()
+                )
+            } throws NotFoundException(defaultExceptionMessages.userNotFound())
 
             assertThrows<NotFoundException> {
                 serviceSpy.deleteById(1)
@@ -348,7 +382,7 @@ class UsersServiceTest {
 
             val result = service.deleteAll()
 
-            assertEquals(result, "Все пользователи удалены успешно.")
+            assertEquals(result, messageResolver.getMessage("response.user.deleteAll"))
 
             verify { repository.deleteAll() }
         }

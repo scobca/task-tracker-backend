@@ -15,6 +15,7 @@ import org.esc.tasktracker.unit.generators.createTeam
 import org.esc.tasktracker.unit.generators.createTeamCreateDto
 import org.esc.tasktracker.unit.generators.createTeamUpdateDto
 import org.esc.tasktracker.unit.generators.createUser
+import org.esc.tasktracker.utils.MessageResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.springframework.context.ApplicationEventPublisher
@@ -33,6 +34,7 @@ class TeamsServiceTest {
     private val teamsSpecifications = mockk<TeamsSpecifications>()
     private val usersService = mockk<UsersService>()
     private val applicationEventPublisher = mockk<ApplicationEventPublisher>()
+    private val messageResolver = mockk<MessageResolver>()
     private var defaultExceptionMessages = mockk<DefaultExceptionMessages>()
     private val service = TeamsService(
         repository,
@@ -40,6 +42,7 @@ class TeamsServiceTest {
         teamsSpecifications,
         usersService,
         applicationEventPublisher,
+        messageResolver,
         defaultExceptionMessages
     )
 
@@ -55,12 +58,16 @@ class TeamsServiceTest {
                 teamsSpecifications,
                 usersService,
                 applicationEventPublisher,
+                messageResolver,
                 defaultExceptionMessages
             )
         )
 
         every { defaultExceptionMessages.teamNotFound() } returns "A team with this ID was not found."
         every { defaultExceptionMessages.userNotFound() } returns "The user with this ID was not found."
+
+        every { messageResolver.getMessage("response.team.deleteById") } returns "Команда удалена успешно."
+        every { messageResolver.getMessage("response.team.deleteAll") } returns "Все команды удалены успешно."
     }
 
     @Nested
@@ -410,7 +417,7 @@ class TeamsServiceTest {
 
             val result = service.deleteAll()
 
-            assertEquals(result, "Все команды удалены успешно.")
+            assertEquals(result, messageResolver.getMessage("response.team.deleteAll"))
 
             verify { repository.deleteAll() }
         }
