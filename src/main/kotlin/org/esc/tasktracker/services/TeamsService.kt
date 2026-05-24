@@ -11,6 +11,7 @@ import org.esc.tasktracker.interfaces.CrudService
 import org.esc.tasktracker.mappers.TeamsMapper
 import org.esc.tasktracker.repositories.TeamsRepository
 import org.esc.tasktracker.repositories.specs.TeamsSpecifications
+import org.esc.tasktracker.utils.MessageResolver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -46,6 +47,7 @@ class TeamsService(
     private val teamsSpecifications: TeamsSpecifications,
     private val usersService: UsersService,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val messageResolver: MessageResolver,
     private val defaultExceptionMessages: DefaultExceptionMessages,
 ) :
     CrudService<Teams, Long, CreateTeamDto, UpdateTeamDto, TeamsFilterDto> {
@@ -173,7 +175,7 @@ class TeamsService(
             repository.deleteById(id)
         }
 
-        return "Команда удалена успешно."
+        return messageResolver.getMessage("response.team.deleteById")
     }
 
     /**
@@ -188,6 +190,6 @@ class TeamsService(
     @Transactional
     override fun deleteAll(): String {
         repository.deleteAll()
-        return "Все команды удалены успешно."
+        return messageResolver.getMessage("response.team.deleteAll")
     }
 }

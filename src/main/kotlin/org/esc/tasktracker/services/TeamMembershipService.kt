@@ -11,6 +11,7 @@ import org.esc.tasktracker.interfaces.CrudService
 import org.esc.tasktracker.mappers.TeamsMapper
 import org.esc.tasktracker.repositories.TeamMembershipRepository
 import org.esc.tasktracker.repositories.specs.TeamMembershipSpecifications
+import org.esc.tasktracker.utils.MessageResolver
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -25,6 +26,7 @@ class TeamMembershipService(
     private val usersService: UsersService,
     private val teamsMapper: TeamsMapper,
     private val specifications: TeamMembershipSpecifications,
+    private val messageResolver: MessageResolver,
     private val defaultExceptionMessages: DefaultExceptionMessages,
 ) : CrudService<TeamMembership, Long, CreateTeamMembershipDto, UpdateTeamMembershipDto, TeamMembershipFilterDto> {
 
@@ -77,7 +79,7 @@ class TeamMembershipService(
         )!!
             .let {
                 repository.delete(it)
-                "Участник команды удален."
+                messageResolver.getMessage("response.teamMembership.deleteById")
             }
     }
 
@@ -85,7 +87,7 @@ class TeamMembershipService(
     fun deleteById(userId: Long, teamId: Long): String {
         return getById(userId, teamId).let { record ->
             repository.delete(record)
-            "Участник команды удален."
+            messageResolver.getMessage("response.teamMembership.deleteById")
         }
     }
 
@@ -94,13 +96,13 @@ class TeamMembershipService(
         return teamsService.getById(teamId, message = defaultExceptionMessages.teamNotFound())!!
             .let {
                 repository.deleteAllByTeam(it)
-                "Все участники команды удалены."
+                messageResolver.getMessage("response.teamMembership.deleteAllByTeam")
             }
     }
 
     @Transactional
     override fun deleteAll(): String {
         repository.deleteAll()
-        return "Все записи об участиях в командах удалены."
+        return messageResolver.getMessage("response.teamMembership.deleteAll")
     }
 }

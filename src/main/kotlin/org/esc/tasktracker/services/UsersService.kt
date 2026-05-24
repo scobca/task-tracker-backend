@@ -12,6 +12,7 @@ import org.esc.tasktracker.interfaces.CrudService
 import org.esc.tasktracker.mappers.UsersMapper
 import org.esc.tasktracker.repositories.UsersRepository
 import org.esc.tasktracker.repositories.specs.UsersSpecifications
+import org.esc.tasktracker.utils.MessageResolver
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
@@ -45,6 +46,7 @@ class UsersService(
     private val usersSpecifications: UsersSpecifications,
     private val usersMapper: UsersMapper,
     private val passwordEncoder: PasswordEncoder,
+    private val messageResolver: MessageResolver,
     private val defaultExceptionMessages: DefaultExceptionMessages,
 ) : CrudService<Users, Long, CreateUserDto, UpdateUserDto, UsersFilterDto> {
 
@@ -157,7 +159,7 @@ class UsersService(
             repository.deleteById(id)
         }
 
-        return "Пользователь удален успешно."
+        return messageResolver.getMessage("response.user.deleteById")
     }
 
     /**
@@ -172,6 +174,6 @@ class UsersService(
     override fun deleteAll(): String {
         repository.deleteAll()
 
-        return "Все пользователи удалены успешно."
+        return messageResolver.getMessage("response.user.deleteAll")
     }
 }
